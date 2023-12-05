@@ -1,61 +1,69 @@
-#include <Servo.h>
 #include <IRremote.h>
+#include <Servo.h>
 
-#define PIN_X_SERVO 9  // Pino do servo para o eixo X
-#define PIN_Y_SERVO 10 // Pino do servo para o eixo Y
-#define PIN_Z_SERVO 11 // Pino do servo para o eixo Z
+#define IR_PIN_RECEIVER 13
+#define SERVOX_PIN 9
+#define SERVOY_PIN 10
+#define SERVOZ_PIN 11
 
 Servo servoX;
 Servo servoY;
 Servo servoZ;
 
-int RECV_PIN = 13; // Pino de recepção do sensor infravermelho
-IRrecv irrecv(RECV_PIN);
-decode_results results;
+void moveServo(Servo &servo, int angle);
+int comandoRecebido(uint8_t comando);
 
 void setup() {
+  servoX.attach(SERVOX_PIN); // inicia o servo
+  servoY.attach(SERVOY_PIN); // inicia o servo
+  servoZ.attach(SERVOZ_PIN); // inicia o servo
   Serial.begin(9600);
-  irrecv.enableIRIn(); // Inicializa o receptor infravermelho
-  servoX.attach(PIN_X_SERVO);
-  servoY.attach(PIN_Y_SERVO);
-  servoZ.attach(PIN_Z_SERVO);
+ // Serial.println("Teste de IR no Servo:");
+  IrReceiver.begin(IR_PIN_RECEIVER);
 }
 
 void loop() {
-  if (irrecv.decode(&results)) {
-    // Imprime o valor recebido pelo controle remoto
-    Serial.println(results.value, HEX);
-
-    // Mapeia os valores recebidos para movimentos nos eixos
-    switch (results.value) {
-      case 0xFF629D: // Botão de seta para a esquerda (X-)
-        moveServo(servoX, -10);
-        break;
-      case 0xFFA857: // Botão de seta para a direita (X+)
-        moveServo(servoX, 10);
-        break;
-      case 0xFF22DD: // Botão de seta para cima (Y+)
-        moveServo(servoY, 10);
-        break;
-      case 0xFFC23D: // Botão de seta para baixo (Y-)
-        moveServo(servoY, -10);
-        break;
-      case 0xFF02FD: // Botão *
-        moveServo(servoZ, 10);
-        break;
-      case 0xFF52AD: // Botão #
-        moveServo(servoZ, -10);
-        break;
-      // Adicione outros casos conforme necessário para padrões de combinação de botões
-    }
-
-    irrecv.resume(); // Recebe o próximo valor
+  if (IrReceiver.decode()) {
+    int comando = comandoRecebido(IrReceiver.decodedIRData.command);
   }
 }
-
 void moveServo(Servo &servo, int angle) {
   int currentPosition = servo.read();
   int targetPosition = constrain(currentPosition + angle, 0, 180);
   servo.write(targetPosition);
   delay(15); // Pequeno atraso para permitir que o servo atinja a posição desejada
+}
+  
+int comandoRecebido(uint8_t comando){
+  Serial.println(comando);
+  IrReceiver.resume();
+  switch(comando){
+      case 4:
+          	moveServo(servoX, -10);
+    		IrReceiver.resume(); 
+        	break;
+    case 6:
+          	moveServo(servoX, 10);
+    		IrReceiver.resume();
+    		break;
+    case 1:
+          	moveServo(servoY, -10);
+    		IrReceiver.resume(); 
+        	break;
+    case 9:
+          	moveServo(servoY, 10);
+    		IrReceiver.resume(); 
+        	break;
+    case 8:
+         	moveServo(servoZ, -10);
+    		IrReceiver.resume(); 
+        	break;
+    case 10:
+          	moveServo(servoZ, 10);
+    		IrReceiver.resume(); 
+        	break;
+   
+
+    IrReceiver.resume(); // Reinicia o receptor IR para receber o próximo sinal
+  }
 }
