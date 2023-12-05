@@ -18,7 +18,7 @@ void setup() {
   servoY.attach(SERVOY_PIN); // inicia o servo
   servoZ.attach(SERVOZ_PIN); // inicia o servo
   Serial.begin(9600);
- // Serial.println("Teste de IR no Servo:");
+ 
   IrReceiver.begin(IR_PIN_RECEIVER);
 }
 
