@@ -26,7 +26,7 @@ void moveServo(Servo &servo, int angle);
 int comandoRecebido(uint8_t comando);
 
 void setup() {
- 
+  int distancia = 5;
   servoX.attach(SERVOX_PIN); // inicia o servo
   servoG.attach(SERVOG_PIN); // inicia o servo
   servoY.attach(SERVOY_PIN); // inicia o servo
@@ -42,7 +42,7 @@ void setup() {
 void loop() {
   int distancia = getDistancia();
   if (IrReceiver.decode()) {
-    int comando = comandoRecebido(IrReceiver.decodedIRData.command,distancia);
+    int comando = comandoRecebido(IrReceiver.decodedIRData.command , distancia);
   }
    // Mede a distância usando o sensor ultrassônico
   
@@ -56,6 +56,11 @@ void loop() {
   } else if (calibrateButtonState == LOW) {
     calibrado = false;
   }
+  if ( distancia <= 3){
+    servoX.write(90);
+    servoY.write(0);
+    servoZ.write(180);
+  }
 
 }
 void moveServo(Servo &servo, int angle) {
@@ -63,6 +68,17 @@ void moveServo(Servo &servo, int angle) {
   int targetPosition = constrain(currentPosition + angle, 0, 180);
   servo.write(targetPosition);
   delay(25);//Pequeno atraso para permitir que o servo atinja a posição desejada
+}
+void veriServo(Servo &servo, int distancia , int inverso) {
+  if ( servo.read() <= 3){
+    if (inverso > 0){
+    servo.write(servo.read() -10);
+    }
+    else{
+      servo.write(servo.read() +10);
+  }
+ }
+ delay(25);//Pequeno atraso para permitir que o servo atinja a posição desejada
 }
 
 void calibrar() {
@@ -95,84 +111,88 @@ int getDistancia() {
   return distancia;
 }
 
+
   
-int comandoRecebido(uint8_t comando, distancia);
+int comandoRecebido(uint8_t comando , int distancia){
   Serial.println(comando);
   IrReceiver.resume();
   switch(comando){
+      case 68:
+      moveServo(servoX,10);
+      moveServo(servoY,10);
+        IrReceiver.resume(); 
+          break;
+      case 7:
+      moveServo(servoX, -10);
+      moveServo(servoY, -10);
+        IrReceiver.resume(); 
+          break;
+      case 64:
+      moveServo(servoX,10);
+      moveServo(servoZ,10);
+        IrReceiver.resume(); 
+          break;
+      case 21:
+      moveServo(servoX, -10);
+      moveServo(servoZ, -10);
+        IrReceiver.resume(); 
+          break;
+      case 67:
+      moveServo(servoY, -10);
+      moveServo(servoZ, -10);
+        IrReceiver.resume(); 
+          break;
+      case 9:
+      moveServo(servoY, -10);
+      moveServo(servoZ, -10);
+        IrReceiver.resume(); 
+          break;
+      
       case 8:
-      if(distancia <= 3){
-        moveServo(servoX,10);
+    
+       moveServo(servoX, -10);
+       veriServo(servoX, distancia, -10);
         IrReceiver.resume(); 
           break;
-      }
-            moveServo(servoX, -10);
-        IrReceiver.resume(); 
-          break;
+          
     case 90:
-    if(distancia <= 3){
-        moveServo(servoX,-10);
-        IrReceiver.resume(); 
-          break;
-      }
+    
             moveServo(servoX, 10);
+            veriServo(servoX, distancia, 10);
         IrReceiver.resume();
         break;
     case 82:
-   if(distancia <= 3){
-        moveServo(servoY, 10);
-        IrReceiver.resume(); 
-          break;
-      }
-            moveServo(servoY, -10);
+        moveServo(servoY, -10);
+        veriServo(servoY, distancia, -10);
         IrReceiver.resume(); 
           break;
     case 24:
-    if(distancia <= 3){
-        moveServo(servoY,-10);
-        IrReceiver.resume(); 
-          break;
-      }
-            moveServo(servoY, 10);
+        moveServo(servoY, 10);
+        veriServo(servoY, distancia, 10);
         IrReceiver.resume(); 
           break;
     case 22:
-    if(distancia <= 3){
-        moveServo(servoZ, 10);
-        IrReceiver.resume(); 
-          break;
-      }
-          moveServo(servoZ, -10);
+        moveServo(servoZ, -10);
+        veriServo(servoZ, distancia, -10);
      //   if(servoZ.read 
         IrReceiver.resume(); 
           break;
     case 13:
-    if(distancia <= 3){
-        moveServo(servoZ,-10);
-        IrReceiver.resume(); 
-          break;
-      }
-            moveServo(servoZ, 10);
+        moveServo(servoZ, 10);
+        veriServo(servoZ, distancia, 10);
         IrReceiver.resume(); 
           break;
     case 69:
-       if(distancia <= 3){
-        moveServo(servoG, 10);
-        IrReceiver.resume(); 
-          break;
-      }
         moveServo(servoG, -10);
+       
         IrReceiver.resume(); 
           break;
     case 71:
-    if(distancia <= 3){
-        moveServo(servoG,-10);
-        IrReceiver.resume(); 
-          break;
-      }
             moveServo(servoG, 10);
         IrReceiver.resume(); 
           break;
+
+      
    
 
     IrReceiver.resume(); // Reinicia o receptor IR para receber o próximo sinal
